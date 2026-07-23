@@ -73,6 +73,7 @@ async function isClubMember(accessToken, athleteStravaId) {
          `https://www.strava.com/api/v3/clubs/${STRAVA.clubId}/members`,
         { headers: { Authorization: `Bearer ${accessToken}` }, params: { per_page: 200, page } }
       );
+      console.log(`Club check page ${page}: found ${members.length} members, looking for athlete ${athleteStravaId}`);
       if (members.length === 0) return false;
       if (members.some(m => m.id == athleteStravaId)) return true;
       page++;
