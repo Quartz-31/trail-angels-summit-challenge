@@ -122,12 +122,12 @@ app.get('/auth/callback', async (req, res) => {
       is_club_member:   memberStatus,
     }, { onConflict: 'strava_id' });
     if (!memberStatus) {
-      return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-challenge?status=not_member`);
+      return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=not_member`);
     }
-    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-challenge?status=connected`);
+    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=connected`);
   } catch (err) {
     console.error('Auth callback error:', err.message);
-    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-challenge?status=error`);
+    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=error`);
   }
 });
 
