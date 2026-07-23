@@ -368,7 +368,7 @@ app.get('/stats', async (req, res) => {
 // Start server
 // ═════════════════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Trail Angels backend running on port ${PORT}`);
   console.log(`Challenge month: ${challengeMonth()}`);
   console.log(`Segment ID: ${STRAVA.segmentId || 'NOT SET YET'}`);
