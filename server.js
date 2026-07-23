@@ -3,6 +3,11 @@ const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
+// Debug: log what Railway is passing in
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET ✓' : 'MISSING ✗');
+console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? 'SET ✓' : 'MISSING ✗');
+console.log('STRAVA_CLIENT_ID:', process.env.STRAVA_CLIENT_ID ? 'SET ✓' : 'MISSING ✗');
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
