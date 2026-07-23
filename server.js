@@ -74,7 +74,7 @@ async function isClubMember(accessToken, athleteStravaId) {
         { headers: { Authorization: `Bearer ${accessToken}` }, params: { per_page: 200, page } }
       );
       if (members.length === 0) return false;
-      if (members.some(m => m.id === athleteStravaId)) return true;
+      if (members.some(m => m.id == athleteStravaId)) return true;
       page++;
     }
   } catch (err) {
