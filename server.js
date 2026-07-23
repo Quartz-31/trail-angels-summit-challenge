@@ -242,6 +242,67 @@ app.get('/leaderboard/efforts', async (req, res) => {
   }
 });
 
+// ── Leaderboard: first timers ─────────────────────────────────────────────────
+// Returns athletes who have efforts this month but have NEVER done the segment before.
+// No rank field — the frontend displays this as a celebration list, not a leaderboard.
+app.get('/leaderboard/first-timers', async (req, res) => {
+  const month      = challengeMonth();       // e.g. '2026-08'
+  const monthStart = `${month}-01`;
+  const monthEnd   = `${month}-31`;
+
+  try {
+    // Fetch ALL efforts ever — no date filter — so we can spot pre-month history
+    const { data: allEfforts, error } = await getSupabase()
+      .from('efforts')
+      .select('athlete_id, effort_date, athletes(strava_id, first_name, last_name, is_club_member)')
+      .order('effort_date', { ascending: true });
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Group every effort by athlete
+    const byAthlete = {};
+    for (const e of allEfforts) {
+      const a = e.athletes;
+      if (!a || !a.is_club_member) continue;
+
+      if (!byAthlete[a.strava_id]) {
+        byAthlete[a.strava_id] = {
+          name:              `${a.first_name} ${a.last_name}`,
+          first_name:        a.first_name,
+          hasPreMonthEffort: false,
+          thisMonthCount:    0,
+        };
+      }
+
+      // Flag if they have even one effort before this month
+      if (e.effort_date < monthStart) {
+        byAthlete[a.strava_id].hasPreMonthEffort = true;
+      }
+
+      // Count efforts within this month
+      if (e.effort_date >= monthStart && e.effort_date <= monthEnd) {
+        byAthlete[a.strava_id].thisMonthCount++;
+      }
+    }
+
+    // Keep only athletes who:
+    //  - have at least one effort this month
+    //  - have NO efforts before this month (true first-timers)
+    const firstTimers = Object.values(byAthlete)
+      .filter(a => a.thisMonthCount > 0 && !a.hasPreMonthEffort)
+      .sort((a, b) => a.first_name.localeCompare(b.first_name))
+      .map(a => ({
+        name:         a.name,
+        effort_count: a.thisMonthCount,
+      }));
+
+    res.json(firstTimers);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 app.get('/stats', async (req, res) => {
   const month = challengeMonth();
