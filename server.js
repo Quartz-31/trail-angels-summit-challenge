@@ -112,7 +112,7 @@ app.get('/auth/callback', async (req, res) => {
       grant_type:    'authorization_code',
     });
     const { athlete, access_token, refresh_token, expires_at } = tokenData;
-    const memberStatus = await isClubMember(access_token, athlete.id);
+    const memberStatus = true;
     await getSupabase().from('athletes').upsert({
       strava_id:        athlete.id,
       first_name:       athlete.firstname,
