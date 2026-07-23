@@ -70,7 +70,7 @@ async function isClubMember(accessToken, athleteStravaId) {
     let page = 1;
     while (true) {
       const { data: members } = await axios.get(
-        `https://www.strava.com/api/v3/clubs/${STRAVA.clubId}/members`,
+         `https://www.strava.com/api/v3/clubs/${STRAVA.clubId}/members`,
         { headers: { Authorization: `Bearer ${accessToken}` }, params: { per_page: 200, page } }
       );
       if (members.length === 0) return false;
