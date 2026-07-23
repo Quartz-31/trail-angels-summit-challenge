@@ -124,7 +124,12 @@ app.get('/auth/callback', async (req, res) => {
     if (!memberStatus) {
       return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=not_member`);
     }
-    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=connected`);
+    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?connected=true&firstname=${encodeURIComponent(athlete.firstname)}&lastname=${encodeURIComponent(athlete.lastname)}&profile=${encodeURIComponent(athlete.profile || '')}`);
+    // not a member
+return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=not_member`);
+
+// error
+res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=error`);
   } catch (err) {
     console.error('Auth callback error:', err.message);
     res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=error`);
