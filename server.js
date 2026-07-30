@@ -32,10 +32,12 @@ function getSupabase() {
 const STRAVA = {
   clientId:     process.env.STRAVA_CLIENT_ID,
   clientSecret: process.env.STRAVA_CLIENT_SECRET,
-  clubId:       process.env.STRAVA_CLUB_ID,
-  segmentId:    process.env.STRAVA_SEGMENT_ID,
   redirectUri:  process.env.REDIRECT_URI,
 };
+
+// ── Segment IDs ───────────────────────────────────────────────────────────────
+const SEGMENT_ID_ANALOG = parseInt(process.env.SEGMENT_ID_ANALOG || '41844407', 10);
+const SEGMENT_ID_EBIKE  = parseInt(process.env.SEGMENT_ID_EBIKE  || '41893406', 10);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatTime(seconds) {
@@ -65,28 +67,14 @@ async function refreshTokenIfNeeded(athlete) {
   return data.access_token;
 }
 
-async function isClubMember(accessToken, athleteStravaId) {
-  try {
-    let page = 1;
-    while (true) {
-      const { data: members } = await axios.get(
-         `https://www.strava.com/api/v3/clubs/${STRAVA.clubId}/members`,
-        { headers: { Authorization: `Bearer ${accessToken}` }, params: { per_page: 200, page } }
-      );
-      console.log(`Club check page ${page}: found ${members.length} members, looking for athlete ${athleteStravaId}`);
-      if (members.length === 0) return false;
-      if (members.some(m => m.id == athleteStravaId)) return true;
-      page++;
-    }
-  } catch (err) {
-    console.error('Club check failed:', err.message);
-    return false;
-  }
-}
-
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', month: challengeMonth(), segment: STRAVA.segmentId });
+  res.json({
+    status:          'ok',
+    month:           challengeMonth(),
+    segment_analog:  SEGMENT_ID_ANALOG,
+    segment_ebike:   SEGMENT_ID_EBIKE,
+  });
 });
 
 // ── Auth: redirect to Strava ──────────────────────────────────────────────────
@@ -99,18 +87,6 @@ app.get('/auth/connect', (req, res) => {
   url.searchParams.set('scope',           'activity:read_all');
   res.redirect(url.toString());
 });
-
-// ── Auth: callback from Strava ────────────────────────────────────────────────
-app.get('/auth/callback', async (req, res) => {
-  const { code } = req.query;
-  if (!code) return res.status(400).send('No code received from Strava');
-  try {
-    const { data: tokenData } = await axios.post('https://www.strava.com/oauth/token', {
-      client_id:     STRAVA.clientId,
-      client_secret: STRAVA.clientSecret,
-      code,
-      grant_type:    'authorization_code',
-    });
 
     const { athlete, access_token, refresh_token, expires_at } = tokenData;
 
