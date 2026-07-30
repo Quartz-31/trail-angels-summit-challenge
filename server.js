@@ -111,8 +111,9 @@ app.get('/auth/callback', async (req, res) => {
       code,
       grant_type:    'authorization_code',
     });
+
     const { athlete, access_token, refresh_token, expires_at } = tokenData;
-    const memberStatus = true;
+
     await getSupabase().from('athletes').upsert({
       strava_id:        athlete.id,
       first_name:       athlete.firstname,
@@ -120,14 +121,22 @@ app.get('/auth/callback', async (req, res) => {
       access_token,
       refresh_token,
       token_expires_at: expires_at,
-      is_club_member:   memberStatus,
+      sex:              athlete.sex,   // ← NEW: stores 'M' or 'F' from Strava
     }, { onConflict: 'strava_id' });
-    if (!memberStatus) {
-      return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=not_member`);
-    }
-    res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?connected=true&firstname=${encodeURIComponent(athlete.firstname)}&lastname=${encodeURIComponent(athlete.lastname)}&profile=${encodeURIComponent(athlete.profile || '')}`);
-    // not a member
-return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=not_member`);
+
+    return res.redirect(
+      `${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge` +
+      `?connected=true` +
+      `&firstname=${encodeURIComponent(athlete.firstname)}` +
+      `&lastname=${encodeURIComponent(athlete.lastname)}` +
+      `&profile=${encodeURIComponent(athlete.profile || '')}`
+    );
+
+  } catch (err) {
+    console.error('Auth callback error:', err.message);
+    return res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=error`);
+  }
+});
 
 // error
 res.redirect(`${process.env.ALLOWED_ORIGIN}/summit-for-dignity-challenge?status=error`);
