@@ -106,6 +106,7 @@ app.get('/auth/callback', async (req, res) => {
       strava_id:        athlete.id,
       first_name:       athlete.firstname,
       last_name:        athlete.lastname,
+      profile_url:      athlete.profile || '',
       access_token,
       refresh_token,
       token_expires_at: expires_at,
